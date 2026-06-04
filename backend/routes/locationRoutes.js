@@ -1,0 +1,14 @@
+import express from "express";
+import createLocation from "../controllers/Locations/createLocation.js";
+import updateLocation from "../controllers/Locations/updateLocation.js";
+import deleteLocation from "../controllers/Locations/deleteLocation.js";
+import getLocations from "../controllers/Locations/getLocations.js";
+import getLocationById from "../controllers/Locations/getLocationById.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+const router=express.Router();
+router.post("/",authMiddleware,createLocation);
+router.put("/:id",authMiddleware,updateLocation);
+router.delete("/:id",authMiddleware,deleteLocation);
+router.get("/",authMiddleware,getLocations);
+router.get("/:id",authMiddleware,getLocationById);
+export default router;

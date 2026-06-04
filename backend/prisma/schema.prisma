@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  user_id  String @id @default(uuid())
+  email    String @unique
+  password String
+  role     String
+}
+
+model Employee {
+  employee_id String @id @default(uuid())
+
+  first_name String
+  last_name  String
+  email      String @unique
+  department String
+  role       String
+
+  assets Asset[] @relation("EmployeeAssets")
+}
+
+model Location {
+  location_id String @id @default(uuid())
+
+  building_name String
+  floor         String
+  room_number   String
+  site_manager  String?
+
+  assets Asset[]
+}
+
+model Vendor {
+  vendor_id String @id @default(uuid())
+
+  company_name   String
+  contact_name   String
+  contact_email  String
+  contact_phone  String
+  support_portal String
+}
+
+model Asset {
+  asset_id String @id @default(uuid())
+
+  asset_tag     String @unique
+  category      String
+  sub_category  String
+  manufacturer  String
+  model_number  String
+  serial_number String
+  status        String
+  po_no         String
+
+  assigned_to String?
+  employee Employee? @relation("EmployeeAssets", fields: [assigned_to], references: [employee_id])
+
+  location_id String?
+  location Location? @relation(fields: [location_id], references: [location_id])
+
+  purchase_date   DateTime
+  warranty_expiry DateTime
+  purchase_cost   Float
+
+  tickets Ticket[]
+}
+
+model Ticket {
+  ticket_id String @id @default(uuid())
+
+  asset_id String
+  asset Asset @relation(fields: [asset_id], references: [asset_id], onDelete: Cascade)
+
+  ticket_type       String
+  issue_description String
+  opened_date       DateTime
+  resolved_date     DateTime?
+  cost              Float
+}
