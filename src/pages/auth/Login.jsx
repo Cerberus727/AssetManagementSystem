@@ -4,13 +4,16 @@ import { useNavigate } from "react-router-dom";
 
 import {
   login,
+  register,
   saveAuth,
 } from "../../services/authService";
 
 export default function Login() {
+  const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("ADMIN");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   
@@ -18,12 +21,19 @@ export default function Login() {
     e.preventDefault();
     try {
       setLoading(true);
-      const data = await login({ email, password });
-      saveAuth({ token: data.token, user: { email } });
-      navigate("/dashboard");
+      if (isLogin) {
+        const data = await login({ email, password });
+        saveAuth({ token: data.token, user: { email, role: data.role } });
+        navigate("/dashboard");
+      } else {
+        await register({ email, password, role });
+        alert("Registration successful! Please login.");
+        setIsLogin(true);
+        setPassword("");
+      }
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Login failed");
+      alert(error.response?.data?.message || (isLogin ? "Login failed" : "Registration failed"));
     } finally {
       setLoading(false);
     }
@@ -80,11 +90,11 @@ export default function Login() {
             />
 
             <h2 className="text-3xl font-bold text-slate-800">
-              Welcome Back
+              {isLogin ? "Welcome Back" : "Create Account"}
             </h2>
 
             <p className="text-slate-500 mt-2">
-              Sign in to continue
+              {isLogin ? "Sign in to continue" : "Register for a new account"}
             </p>
           </div>
 
@@ -134,18 +144,38 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="flex justify-between items-center">
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" />
-                Remember Me
-              </label>
+            {!isLogin && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Role
+                </label>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="w-full border border-slate-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="ADMIN">Administrator</option>
+                  <option value="USER">Standard User</option>
+                </select>
+              </div>
+            )}
 
-              <button
-                type="button"
-                className="text-sm text-orange-600 hover:underline"
-              >
-                Forgot Password?
-              </button>
+            <div className="flex justify-between items-center">
+              {isLogin && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" />
+                  Remember Me
+                </label>
+              )}
+
+              {isLogin && (
+                <button
+                  type="button"
+                  className="text-sm text-orange-600 hover:underline"
+                >
+                  Forgot Password?
+                </button>
+              )}
             </div>
 
             <button
@@ -153,9 +183,29 @@ export default function Login() {
               disabled={loading}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-lg transition"
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading
+                ? isLogin
+                  ? "Logging in..."
+                  : "Registering..."
+                : isLogin
+                ? "Login"
+                : "Register"}
             </button>
           </form>
+
+          {/* Toggle between Login and Register */}
+          <div className="text-center mt-6 text-sm">
+            <span className="text-slate-600">
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-orange-600 font-semibold hover:underline"
+            >
+              {isLogin ? "Register" : "Login"}
+            </button>
+          </div>
 
           {/* Footer */}
           <div className="text-center mt-6 text-sm text-slate-500">
