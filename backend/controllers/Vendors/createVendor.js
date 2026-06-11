@@ -51,7 +51,7 @@ const createVendor = async (req, res) => {
         }
 
      
-        const existingVendor = await prisma.vendor.findUnique({
+        const existingVendor = await prisma.vendor.findFirst({
             where: {
                 contact_email: contact_email.trim()
             }
