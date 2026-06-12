@@ -9,7 +9,7 @@ const getLocations=async(req,res)=>{
         return res.status(200).json({
             success:true,
             message:"Locations retrieved successfully", 
-            location
+            locations: location
         });
     }
     catch(error){

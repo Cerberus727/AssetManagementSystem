@@ -36,6 +36,10 @@ export default function AssetList() {
       label: "Manufacturer",
     },
     {
+      key: "po_no",
+      label: "PO Number",
+    },
+    {
       key: "model_number",
       label: "Model",
     },

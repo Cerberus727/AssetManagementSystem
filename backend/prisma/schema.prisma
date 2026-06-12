@@ -22,7 +22,8 @@ model Employee {
   department String
   role       String
 
-  assets Asset[] @relation("EmployeeAssets")
+  assets      Asset[]           @relation("EmployeeAssets")
+  allocations AssetAllocation[]
 }
 
 model Location {
@@ -33,7 +34,8 @@ model Location {
   room_number   String
   site_manager  String?
 
-  assets Asset[]
+  assets      Asset[]
+  allocations AssetAllocation[]
 }
 
 model Vendor {
@@ -44,38 +46,76 @@ model Vendor {
   contact_email  String
   contact_phone  String
   support_portal String
+
+  purchaseOrders PurchaseOrder[]
+}
+
+model PurchaseOrder {
+  po_no String @id
+
+  description      String
+  capitalized_date DateTime
+  ordered_qty      Int
+  unit_cost        Float
+  category         String
+  sub_category     String
+  warranty_expiry  DateTime
+
+  vendor_id String
+  vendor    Vendor @relation(fields: [vendor_id], references: [vendor_id])
+
+  assets Asset[]
 }
 
 model Asset {
   asset_id String @id @default(uuid())
 
-  asset_tag     String @unique
+  asset_tag     String  @unique
   category      String
   sub_category  String
   manufacturer  String
   model_number  String
   serial_number String
   status        String
-  po_no         String
+
+  // PO relation — nullable so existing assets without a matched PO still work
+  po_no         String?
+  purchaseOrder PurchaseOrder? @relation(fields: [po_no], references: [po_no])
 
   assigned_to String?
-  employee Employee? @relation("EmployeeAssets", fields: [assigned_to], references: [employee_id])
+  employee    Employee? @relation("EmployeeAssets", fields: [assigned_to], references: [employee_id])
 
   location_id String?
-  location Location? @relation(fields: [location_id], references: [location_id])
+  location    Location? @relation(fields: [location_id], references: [location_id])
 
   purchase_date   DateTime
   warranty_expiry DateTime
   purchase_cost   Float
 
-  tickets Ticket[]
+  tickets     Ticket[]
+  allocations AssetAllocation[]
+}
+
+model AssetAllocation {
+  allocation_id String @id @default(uuid())
+
+  asset_id String
+  asset    Asset  @relation(fields: [asset_id], references: [asset_id], onDelete: Cascade)
+
+  employee_id String
+  employee    Employee @relation(fields: [employee_id], references: [employee_id])
+
+  location_id String
+  location    Location @relation(fields: [location_id], references: [location_id])
+
+  allocated_at DateTime @default(now())
 }
 
 model Ticket {
   ticket_id String @id @default(uuid())
 
   asset_id String
-  asset Asset @relation(fields: [asset_id], references: [asset_id], onDelete: Cascade)
+  asset    Asset  @relation(fields: [asset_id], references: [asset_id], onDelete: Cascade)
 
   ticket_type       String
   issue_description String
